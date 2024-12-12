@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://texerauser:12345@localhost/cs147'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://texerauser:12345678@localhost/cs147'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
