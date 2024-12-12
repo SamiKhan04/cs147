@@ -26,3 +26,5 @@ VALUES
 
 INSERT INTO user_stats (user_id, login_attempts, last_login_time)
 SELECT id, 0, NULL FROM users;
+
+UPDATE users set rfid = "C1 CD 24 3";
