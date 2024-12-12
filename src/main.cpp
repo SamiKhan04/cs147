@@ -28,6 +28,7 @@ const int kNetworkDelay = 1000;
 
 const int servoPin = 32; 
 const int authorizedUID[4] = {0xC1, 0xCD, 0x24, 0x03};
+String authID = "C1+CD+24+3";
 int tempKey[4];
 bool unauth = false;
 
@@ -128,6 +129,53 @@ void loop() {
 
 
   if (isAuthorized) {
+    String path = "/lock_attempt?rfid=" + authID;
+    WiFiClient c;
+    HttpClient http(c);
+    err = http.get("54.183.251.111", 5000, path.c_str() , NULL);
+    if (err == 0) {
+        Serial.println("Started request successfully");
+        err = http.responseStatusCode();
+
+        if (err >= 0) {
+            Serial.print("Got status code: ");
+            Serial.println(err);
+
+            // Skip response headers
+            err = http.skipResponseHeaders();
+            if (err >= 0) {
+                int bodyLen = http.contentLength();
+                Serial.print("Content length: ");
+                Serial.println(bodyLen);
+                Serial.println("\nBody returned follows:");
+
+                // Print response body
+                unsigned long timeoutStart = millis();
+                char c;
+
+                while ((http.connected() || http.available()) && 
+                       ((millis() - timeoutStart) < kNetworkTimeout)) {
+                    if (http.available()) {
+                        c = http.read();
+                        Serial.print(c);
+                        bodyLen--;
+
+                        // Reset timeout counter
+                        timeoutStart = millis();
+                    } else {
+                        delay(kNetworkDelay);
+                    }
+                }
+            } else {
+                Serial.printf("Failed to skip response headers: %d\n", err);
+            }
+        } else {
+            Serial.printf("Getting response failed: %d\n", err);
+        }
+    } else {
+        Serial.printf("Connection failed: %d\n", err);
+    }
+
     value = "auth";
     Serial.println("Authorized tag detected. Moving servo...");
     myservo.write(179); 
