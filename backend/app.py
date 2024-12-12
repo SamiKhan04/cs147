@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://texerauser:12345678@localhost/cs147'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://texerauser:12345@localhost/cs147'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
@@ -15,8 +15,6 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-
-# db = {"sami": ("12345", "C1 CD 24 3")}
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -70,7 +68,7 @@ def home():
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
 
-        if user and user.password == password:  # Replace this with a hashed password comparison
+        if user and user.password == password:
             login_user(user)
             record_login_attempt(user)
             flash('Login successful! Welcome back, {}.'.format(user.username), 'success')
@@ -95,7 +93,7 @@ def login():
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
         
-        if user and user.password == password:  # Replace this with a hashed password comparison
+        if user and user.password == password: 
             login_user(user)
             record_login_attempt(user)
             flash('Login successful! Welcome back, {}.'.format(user.username), 'success')
@@ -117,7 +115,7 @@ def record_lock_attempt(user):
     
 @app.route('/lock_attempt', methods=['GET'])
 def record_lock_attempt():
-    rfid = request.args.get('rfid')  # Get the RFID from query parameters
+    rfid = request.args.get('rfid') 
     if not rfid:
         return jsonify({'error': 'RFID is required'}), 400
 
