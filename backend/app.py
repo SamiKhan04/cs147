@@ -63,9 +63,22 @@ def load_user(user_id):
 
 
 # Routes
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home():
-    return f"Welcome, {current_user.username}!" if current_user.is_authenticated else "Welcome, Guest!"
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+
+        if user and user.password == password:  # Replace this with a hashed password comparison
+            login_user(user)
+            record_login_attempt(user)
+            flash('Login successful! Welcome back, {}.'.format(user.username), 'success')
+        else:
+            flash('Invalid username or password.', 'danger')
+
+    return render_template('login.html')
+
 
 def record_login_attempt(user):
     # Increment login attempts
@@ -85,8 +98,7 @@ def login():
         if user and user.password == password:  # Replace this with a hashed password comparison
             login_user(user)
             record_login_attempt(user)
-            flash('Login successful!', 'success')
-            return redirect(url_for('protected'))
+            flash('Login successful! Welcome back, {}.'.format(user.username), 'success')
         else:
             flash('Invalid username or password.', 'danger')
 
@@ -148,6 +160,20 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
+
+
+@app.route('/stats')
+@login_required
+def user_stats():
+    # Fetch the stats of the logged-in user
+    stats = UserStats.query.filter_by(user_id=current_user.id).first()
+    if not stats:
+        return jsonify({'error': 'Stats not found'}), 404
+
+    # Render or return stats data
+    return render_template('user_stats.html', stats=stats)
+
+
 
 
 if __name__ == '__main__':
